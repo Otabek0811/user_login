@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  login VARCHAR NOT NULL UNIQUE,
+  password VARCHAR NOT NULL,
+  age INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS phones (
+  id UUID PRIMARY KEY,
+  user_id  UUID REFERENCES users(id),
+  phone VARCHAR NOT NULL,
+  Description VARCHAR,
+  is_fax  boolean NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+);
+
+
+CREATE INDEX on phones(user_id, phone);
