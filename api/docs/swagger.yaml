@@ -127,6 +127,45 @@ paths:
       summary: Login
       tags:
       - Login
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      operationId: logout_user
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: LogOut
+      tags:
+      - LogOut
   /register:
     post:
       consumes:

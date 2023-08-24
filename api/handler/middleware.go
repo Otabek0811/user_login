@@ -12,7 +12,13 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 
-		value := c.GetHeader("Authorization")
+		value, err := c.Cookie("token")
+		if err != nil {
+			c.String(http.StatusNotFound, "Cookie not found")
+			return
+		}
+
+		// value := c.GetHeader("Authorization")
 
 		info, err := helper.ParseClaims(value, h.cfg.AuthSecretKey)
 

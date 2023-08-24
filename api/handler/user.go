@@ -66,20 +66,20 @@ func (h *Handler) CreateUser(c *gin.Context) {
 // @Failure 500 {object} Response{data=string} "Server Error"
 func (h *Handler) GetByIdUser(c *gin.Context) {
 
-	val, exists := c.Get("Auth")
-
-	if !exists {
-		h.handlerResponse(c, "get id in token", http.StatusInternalServerError, "invalid token")
+	value, err := c.Cookie("token")
+	if err != nil {
+		c.String(http.StatusNotFound, " Cookie not found")
 		return
 	}
-	userData := val.(helper.TokenInfo)
 
-	var id string
-	if len(userData.UserID) > 0 {
-		id = userData.UserID
-	} else {
-		id = c.Param("id")
+	info, err := helper.ParseClaims(value, h.cfg.AuthSecretKey)
+
+	if err != nil {
+		c.AbortWithError(http.StatusForbidden, err)
+		return
 	}
+
+	id := info.UserID
 
 	resp, err := h.storages.User().GetByID(context.Background(), &models.UserPrimaryKey{Id: id})
 	if err != nil {
@@ -89,8 +89,6 @@ func (h *Handler) GetByIdUser(c *gin.Context) {
 
 	h.handlerResponse(c, "get user by id", http.StatusCreated, resp)
 }
-
-
 
 // @Security ApiKeyAuth
 // Get By Name User godoc
@@ -114,11 +112,11 @@ func (h *Handler) GetByNameUser(c *gin.Context) {
 		return
 	}
 	userData := val.(helper.TokenInfo)
-	
+
 	var name string = c.Param("name")
 
 	resp, err := h.storages.User().GetByID(context.Background(), &models.UserPrimaryKey{
-		Name: name,
+		Name:   name,
 		UserID: userData.UserID,
 	})
 	if err != nil {
@@ -180,7 +178,6 @@ func (h *Handler) GetListUser(c *gin.Context) {
 	h.handlerResponse(c, "get list user response", http.StatusOK, resp)
 }
 
-
 // @Security ApiKeyAuth
 // Update User godoc
 // @ID update_user
@@ -196,7 +193,7 @@ func (h *Handler) GetListUser(c *gin.Context) {
 // @Response 400 {object} Response{data=string} "Bad Request"
 // @Failure 500 {object} Response{data=string} "Server Error"
 func (h *Handler) UpdateUser(c *gin.Context) {
-	
+
 	var updateUser models.UpdateUser
 
 	val, exists := c.Get("Auth")
@@ -207,14 +204,12 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	}
 	userData := val.(helper.TokenInfo)
 
-
 	var id string
 	if len(userData.UserID) > 0 {
 		id = userData.UserID
 	} else {
 		id = c.Param("id")
 	}
-
 
 	err := c.ShouldBindJSON(&updateUser)
 	if err != nil {
@@ -272,7 +267,6 @@ func (h *Handler) DeleteUser(c *gin.Context) {
 		return
 	}
 	userData := val.(helper.TokenInfo)
-
 
 	var id string
 	if len(userData.UserID) > 0 {

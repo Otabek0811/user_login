@@ -11,7 +11,6 @@ import (
 
 type TokenInfo struct {
 	UserID     string `json:"user_id"`
-	ClientType string `json:"client_type"`
 }
 
 // GenerateJWT ...
@@ -51,8 +50,6 @@ func ParseClaims(token string, secretKey string) (result TokenInfo, err error) {
 		return result, err
 	}
 
-
-	result.ClientType = cast.ToString(claims["client_type"])
 
 	return
 }

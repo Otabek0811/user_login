@@ -115,10 +115,6 @@ func (h *Handler) LoginUser(c *gin.Context) {
 
 	}
 
-	// if resp.Password != logPass.Password {
-	// 	h.handlerResponse(c, "login user", http.StatusBadRequest, "Incorrect Password")
-	// 	return
-	// }
 	if !h.CheckPasswordHash(logPass.Password, resp.Password) {
 		h.handlerResponse(c, "login user", http.StatusBadRequest, "Incorrect Password")
 		return
@@ -130,12 +126,50 @@ func (h *Handler) LoginUser(c *gin.Context) {
 
 	m["user_id"] = resp.Id
 
-	token, err := helper.GenerateJWT(m, time.Hour*24, "secret")
+	token, err := helper.GenerateJWT(m, time.Hour, "secret")
 
 	if err != nil {
 		h.handlerResponse(c, "token response", http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, token)
+	c.SetCookie("token",token,60*60*24, "/", "localhost", false, true)
+	c.JSON(http.StatusCreated, nil)
+}
+
+// LogOut godoc
+// @ID logout_user
+// @Router /logout [POST]
+// @Summary LogOut
+// @Description Login
+// @Tags LogOut
+// @Accept json
+// @Produce json
+// @Success 201 {object} Response{data=string} "Success Request"
+// @Response 400 {object} Response{data=string} "Bad Request"
+// @Failure 500 {object} Response{data=string} "Server Error"
+func (h *Handler) LogOutUser( c *gin.Context){
+	value, err := c.Cookie("token")
+	if err != nil {
+		c.String(http.StatusNotFound, "Cookie not found")
+		return
+	}
+
+	info, err := helper.ParseClaims(value, h.cfg.AuthSecretKey)
+
+	if err != nil {
+		c.AbortWithError(http.StatusForbidden, err)
+		return
+	}
+	fmt.Println(info)
+
+	h.DeleteCookieHandler(c)
+
+}
+
+
+
+func (h *Handler) DeleteCookieHandler(c *gin.Context) {
+	c.SetCookie("token", "", -1, "/", "localhost", false, true)
+	c.String(http.StatusOK, "User has been logout --> successfully")
 }

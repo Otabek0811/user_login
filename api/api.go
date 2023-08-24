@@ -33,6 +33,10 @@ func NewApi(r *gin.Engine, cfg *config.Config, store storage.StorageI, logger lo
 	// login
 	r.POST("/login", handler.LoginUser)
 
+	//logout
+
+	r.POST("/logout", handler.LogOutUser)
+
 	// user api
 	v1.Use(handler.AuthMiddleware())
 	v1.POST("/user", handler.CreateUser)
